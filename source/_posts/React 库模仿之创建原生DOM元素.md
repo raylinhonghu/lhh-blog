@@ -1,0 +1,191 @@
+# 创建 React 库 (1)
+
+## fiber 有以下属性
+
+- tag 如 
+	* CLASS_TAG
+	* NATIVE_TAG
+- type 如 Mutation
+- parent 父节点
+- child 子节点
+- sibling 姐妹节点
+- alternate 每当react 调用render或者 setState 会同时克隆一个fiber镜像， 那些更新会被标记在fiber上， alternate 属性会链接两个fiber树
+	 * "The alternate of the current fiber is the work-in-progress, and the alternate of the work-in-progress is the current fiber" 
+- stateNode 当前 fiber
+- props
+- partialState 来自 setState， 会被下次render使用
+- effectTag  	 
+	* PLACEMENT: first render
+	* UPDATE: updating
+- memoizedState 和Hooks相关的
+- updateQueue
+- effects 对dom冒泡一样的变化
+	* 如 ['create div with style s', 'create button']
+
+我们可以创建一个 fiber 对象如下
+
+```
+let fiber = {
+
+	tag: elementTag(element),
+
+	type: element.type,
+
+	parent: fiberBeingExecuted,
+
+	child: null,
+
+	sibling: null,
+
+	alternate: alternateFiber,
+
+	statenNode: alternateFiber.stateNode,
+	
+	props: element.props, 
+
+	partialState: alternateFiber.partialState,
+
+	effectTag: UPDATE,
+	
+	memoizedState: alternateFiber.memoizedState,
+	
+	updateQueue: [],
+
+	effects: [],
+};
+```
+
+## CreateElement
+
+
+### 我们要做的目的
+最终 JSX 会被 babel 编译成 类似于 CreateElement 和 createTextElement, 所以我们这次的目的是实现这两个方法。
+
+所有被 console log 出来的dom 元素只有 type 和 props
+
+
+```
+const createTextElement = value =>
+  createElement(TEXT_ELEMENT, { nodeValue: value });
+
+```
+
+### 最后完整的代码
+```
+const TEXT_ELEMENT = "TEXT_ELEMENT";
+
+const createTextElement = value =>
+  createElement(TEXT_ELEMENT, { nodeValue: value });
+
+const addArrayIndicator = child =>
+  Array.isArray(child)
+    ? child.map(element => ({ ...element, isArray: true }))
+    : child;
+
+const createValidElement = c =>
+  c instanceof Object ? c : createTextElement(c);
+
+const createElement = (type, config, ...args) => {
+  const props = Object.assign({}, config);
+  const hasChildren = args.length > 0;
+
+  if (typeof args[0] === "function") {
+    props.children = args[0];
+    return { type, props };
+  }
+
+  const rawChildren = hasChildren
+    ? [].concat(...args.map(addArrayIndicator))
+    : [];
+
+  props.children = rawChildren
+    .filter(c => c != null)
+    .map(c => (!c ? null : createValidElement(c)));
+  return { type, props };
+};
+
+export default createElement;
+```
+
+## createDomElement 创建原生DOM元素
+
+### 元素结构通常为这样
+有 type 和 props
+props 里有 children， nodeValue， 或是一些事件。例子如下：
+
+```
+const TE = { type: 'TEXT_ELEMENT', props: { nodeValue: 'sd', children: [] } };
+
+const RE = {
+	type: 'div',
+	props: {
+		onClick: () => {
+			console.log('clicked');
+		},
+		children: [TE],
+	},
+};
+```
+
+### 我们要使用原生DOM方法来把fiber画到页面上
+一共有两种 TEXT 和 除TEXT以外的两种方法。
+
+```
+document.createTextNode
+```
+
+```
+document.createElement
+```
+
+我们可以从 props 里面得到他们的值，即 NodeValue
+还可以从 props 里面得到 onClick 等事件函数。
+
+不过我们需要 click 事件来传入到 addEventListener 
+所以我们需要在原有的字段上进行变动， 把onClick 变成 click
+
+具体的实现方法如下： 
+
+```
+const root = document.getElementById('root');
+
+const TE = { type: 'TEXT_ELEMENT', props: { nodeValue: 'sd', children: [] } };
+
+const RE = {
+	type: 'div',
+	props: {
+		onClick: () => {
+			console.log('clicked');
+		},
+		children: [TE],
+	},
+};
+
+const createDomElement = fiber => {
+	if (fiber.type === 'TEXT_ELEMENT') {
+		return document.createTextNode(fiber.props.nodeValue);
+	}
+
+	const element = document.createElement(fiber.type);
+
+	Object.keys(fiber.props)
+		.filter(props => {
+			return props.startsWith('on');
+		})
+		.map(x => x.substr(2))
+		.map(x => x.toLowerCase())
+		.forEach(eventName => {
+            let d = eventName[0].toUpperCase();
+			element.addEventListener(eventName, fiber.props[`on${d + eventName.substr(1)}`]);
+		});
+
+	return element;
+};
+
+const textE = createDomElement(TE)
+const divE = createDomElement(RE)
+
+divE.append(textE)
+
+root.append(divE)
+```

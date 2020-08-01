@@ -2,7 +2,7 @@
 
 title: 用 GraphQL + Typeorm 实现登陆功能（1）
 
-category: GraphQL
+category: JavaScript
 
 date: 2019-08-09
 
@@ -102,6 +102,7 @@ Create table student(); 建表
 }
 
 ``` 
+
 - synchronize 意味着同步
 - logging 是是否打印日志
 - entities 是我们之后写的一些 typeorm 的 Entity
@@ -234,7 +235,7 @@ const app = Express();
 ```
 app.use(cors({
         credentials: true,
-        origin: 'http://localhost:3000'
+        origin: `http://localhost:3000`
 }));
 
 ```
@@ -274,4 +275,4 @@ app.listen(4000, () => {
 ```
 
 
-之后的章节我会开始介绍如何写注册账号的 Resolver啦
+之后的章节我会开始介绍如何写 注册账号的 Resolver～ 😁

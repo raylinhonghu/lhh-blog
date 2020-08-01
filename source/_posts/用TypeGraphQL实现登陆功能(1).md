@@ -2,7 +2,7 @@
 
 title: 用 GraphQL + Typeorm 实现登陆功能（1）
 
-category: JavaScript
+category: GraphQL
 
 date: 2019-08-09
 

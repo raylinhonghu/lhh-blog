@@ -63,7 +63,6 @@ docker run -name postgres-0 -e POSTGRES_PASSWORD=mypassword -p 5432:5432
 
 假如需要本地查看你的实例（数据库） 可以使用 bash
 
-
 ```
 Docker exec -it (postgres-0 / docker-id) bash 
 
@@ -100,7 +99,6 @@ Create table student(); 建表
 	"logging": true,
 	"entities": ["src/entity/**/*.ts"]
 }
-
 ``` 
 
 - synchronize 意味着同步
@@ -111,7 +109,6 @@ Create table student(); 建表
 此时我们先创建一个前面说的 Entity 文件。
 
 在位于根目录下的 entity 我们创建一个 User.ts
-
 
 ```
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from "typeorm";
@@ -157,11 +154,13 @@ export class User extends BaseEntity {
 @Entity()
 export class User extends BaseEntity {}
 ```
+
 @Entity 装饰器来自typeorm， 他创建的类允许我们直接使用他来对数据库直接操作。例如
 
 ```
 User.create({...}).save();
 ```
+
 @Column 装饰器同样来自typeorm，可以给数据库里添加列。在上面例子中我们给 User 这个类添加了 id， firstname， lastname， email， password， confirmed 几个列。而且我们可以给这个列设置属性和类别如下所示。
 
 ```
@@ -182,7 +181,6 @@ docker exec -it 5623bf562625 redis-cli    // 运行redis-cli
 
 ```
 
-
 ## 真正开始
 
 准备工作都就绪了， 我们现在又了我们正在运行的数据库和redis，现在我们开始搭建服务器。
@@ -190,6 +188,7 @@ docker exec -it 5623bf562625 redis-cli    // 运行redis-cli
 ### 连接数据库
 
 typeorm 会自动连接我们的数据库。
+
 ```
 await createConnection();
 ```
@@ -203,8 +202,8 @@ const apolloServer = new ApolloServer({
         context: ({ req, res }: any) => ({ req, res }),
         uploads: false
 })
-
 ```
+
 - schema 之后我会解释， 是创建我们之后要创建的 typegraphql的集合
 - context 载有运行时的信息
 - upload 是取消原有的上传文件
@@ -219,7 +218,6 @@ export const createSchema = () => buildSchema({
     resolvers: [__dirname + "/../modules/**/!(*.test).{ts,js}"],
 
 })
-
 ```
 
 创建一个 express app 为 apolloServer 所用
@@ -228,7 +226,6 @@ export const createSchema = () => buildSchema({
 const app = Express();
 
 ```
-
 
 首先解决服务器解决跨域问题
 
@@ -259,20 +256,16 @@ app.use(cors({
             }
         })
 )
-
 ```
 
 最后把 express app 丢进 apollo 大功告成
 
 ```
-
 apolloServer.applyMiddleware({ app })
 
 app.listen(4000, () => {
         console.log("server started on http://localhost:4000/graphql")
 })
-
 ```
-
 
 之后的章节我会开始介绍如何写 注册账号的 Resolver～ 😁

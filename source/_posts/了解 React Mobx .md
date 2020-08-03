@@ -2,11 +2,7 @@
 
 title: 了解 React Mobx 
 
-category: 
-
-- Mobx
-
-- React
+category: Mobx
 
 date: 2019-01-02
 

@@ -1,6 +1,6 @@
 ---
 
-title: React Mobx 
+title: 了解 React Mobx 
 
 category: 
 - React

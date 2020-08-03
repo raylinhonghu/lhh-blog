@@ -4,8 +4,9 @@ title: 了解 React Mobx
 
 category: 
 
-- React
 - Mobx
+
+- React
 
 date: 2019-01-02
 
